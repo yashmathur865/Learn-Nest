@@ -6,30 +6,38 @@ const Course = require("../models/Course");
 const { convertSecondsToDuration } = require("../utils/secToDuration");
 
 
+// Create Profile
 exports.updateProfile = async (req,res) =>{
     try {
-        
+
+      // Fetching Data from the request body
         const {dateOfBirth="", gender, about="", contactNumber } = req.body;
-        
+
+        // Fetching the userId from the request body
         const userId = req.user.id
 
-        if(!contactNumber || !gender ) {
+        // Validation
+        if(!contactNumber) {
             return res.status(400).json({
                 success:false,
                 message:'All fields are required',
             });
-        } ``
+        }
 
+        // Fetching the profileId from the user
         const userDetails = await User.findById(userId);
         const profileId = userDetails.additionalDetails;
 
+        // Updating the profile with the provided data
         const updatedProfile = await Profile.findByIdAndUpdate(profileId, {dateOfBirth, gender, about, contactNumber}, {new:true});
+
+        // Returning the updated profile
         const updatedUserDetails = await User.findById(userId).populate("additionalDetails").exec();
         return res.status(200).json({
             success:true,
             message:'Profile updated successfully',
             updatedUserDetails
-        })   
+        })
     } catch (error) {
         console.error(error);
         return res.status(500).json({
@@ -40,31 +48,34 @@ exports.updateProfile = async (req,res) =>{
     }
 }
 
-
+// Delete Profile
 exports.deleteAccount = async (req,res) =>{
     try {
+      // Fetching the user from the request body
         const {user} = req.body
         const userId = req.user.id
 
-        //vallidation not neccessary but still doing
+        //validation not necessary but still doing
         const userDetails = await User.findById(userId);
         // if(!userDetails) {
         //     return res.status(404).json({
         //         success:false,
         //         message:'User not found',
         //     });
-        // }         
+        // }
 
+        //delete profile
         await Profile.findByIdAndDelete({_id:userDetails.additionalDetails});
 
-        //TOOD: HW unenroll user form all enrolled courses
+        //TOD0: HW unenroll user form all enrolled courses
         //delete user
         await User.findByIdAndDelete({_id:userId});
 
+        //return response
         return res.status(200).json({
             success:true,
             message:'User deleted successfully',
-        })   
+        })
     } catch (error) {
         console.error(error);
         return res.status(500).json({
@@ -75,21 +86,23 @@ exports.deleteAccount = async (req,res) =>{
     }
 }
 
+// Get Profile
 exports.getAllUserDetails = async (req, res) => {
 
     try {
-        //get id
+        // Fetching the userId from the request body
         const id = req.user.id;
 
-        //validation and get user details
+        // Fetching the user details
         const userDetails = await User.findById(id).populate("additionalDetails").exec();
+
         //return response
         return res.status(200).json({
             success:true,
             message:'User Data Fetched Successfully',
             userDetails
         });
-       
+
     }
     catch(error) {
         return res.status(500).json({
@@ -99,6 +112,7 @@ exports.getAllUserDetails = async (req, res) => {
     }
 }
 
+// Update Profile Picture
 exports.updateDisplayPicture = async (req, res) => {
     try {
       const displayPicture = req.files.displayPicture
@@ -127,7 +141,8 @@ exports.updateDisplayPicture = async (req, res) => {
       })
     }
 };
-  
+
+// Get Enrolled Courses
 exports.getEnrolledCourses = async (req, res) => {
     try {
       const userId = req.user.id
@@ -195,7 +210,7 @@ exports.getEnrolledCourses = async (req, res) => {
     }
 };
 
-
+// Get Instructor Profile
 exports.instructorDashboard = async(req, res) => {
 	try{
 		const courseDetails = await Course.find({instructor:req.user.id});

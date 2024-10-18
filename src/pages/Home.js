@@ -16,9 +16,9 @@ const Home = () => {
   return (
     <div>
         {/* Section1 */}
-        <div className='relative mx-auto flex flex-col w-11/12 max-w-maxContent items-center 
+        <div className='relative mx-auto flex flex-col w-11/12 max-w-maxContent items-center
       text-white justify-between'>
-            {/* Top Button */}   
+            {/* Top Button */}
             <Link to={"/signup"}>
                 <div className=' group mt-16 p-1 mx-auto rounded-full bg-richblack-800 font-bold text-richblack-200
                 transition-all duration-200 drop-shadow-[0_1.5px_rgba(255,255,255,0.25)] hover:scale-95 w-fit hover:drop-shadow-none'>
@@ -38,16 +38,16 @@ const Home = () => {
 
             {/* intro */}
             <div className=' mt-4 w-[90%] text-center text-lg font-bold text-richblack-300'>
-                With our online coding courses, you can learn at your own pace, from anywhere in the world, and get access to a wealth of resources, including hands-on projects, quizzes, and personalized feedback from instructors. 
+                With our online coding courses, you can learn at your own pace, from anywhere in the world, and get access to a wealth of resources, including hands-on projects, quizzes, and personalized feedback from instructors.
             </div>
 
             {/* Buttons */}
             <div className='flex flex-row gap-7 mt-8'>
-                <CTAButton active={true} linkto={"/signup"}> 
+                <CTAButton active={true} linkto={"/signup"}>
                     Learn More
                 </CTAButton>
 
-                <CTAButton active={false} linkto={"/login"}> 
+                <CTAButton active={false} linkto={"/login"}>
                     Book a Demo
                 </CTAButton>
             </div>
@@ -131,11 +131,11 @@ const Home = () => {
             </div>
 
             <ExploreMore />
-        </div> 
-    
+        </div>
+
         {/* Section2 */}
         <div className='bg-pure-greys-5 text-richblack-700'>
-                    
+
             {/* buttons and criss-cross background */}
             <div className='homepage_bg h-[310px]'>
                 <div className='w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-5 mx-auto'>
@@ -146,7 +146,7 @@ const Home = () => {
                                 Explore Full Catalog
                                 <FaArrowRight />
                             </div>
-                            
+
                         </CTAButton>
                         <CTAButton active={false} linkto={"/signup"}>
                             <div>
@@ -180,16 +180,16 @@ const Home = () => {
                     </div>
 
                 </div>
-   
+
                 {/* Timeline section */}
                 <TimelineSection />
 
                 <LearningLanguageSection />
 
-            </div>          
+            </div>
         </div>
 
-        {/*Section 3 */}            
+        {/*Section 3 */}
         <div className='w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-8 first-letter bg-richblack-900 text-white'>
             <InstructorSection />
 

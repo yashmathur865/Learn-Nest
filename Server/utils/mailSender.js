@@ -12,14 +12,14 @@ const mailSender = async (email, title, body) =>{
           })
 
           let info = await transporter.sendMail({
-            from: "Yash Sarode - StudyNotion" , // sender address
-            to: `${email}`, 
-            subject: `${title}`, 
+            from: "Yash Mathur - StudyNotion" , // sender address
+            to: `${email}`,
+            subject: `${title}`,
             html: `${body}`, // plain text body
           });
 
             return info;
-        
+
     } catch (error) {
         console.log("Error in mailSender", error.message);
     }

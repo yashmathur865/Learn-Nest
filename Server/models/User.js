@@ -2,37 +2,37 @@ const mongoose =  require('mongoose');
 
 const userSchema = new mongoose.Schema({
     firstName:{
-        type:String, 
+        type:String,
         required:true,
         trim:true
     },
     lastName:{
-        type:String, 
+        type:String,
         required:true,
         trim:true
     },
     email:{
-        type:String, 
+        type:String,
         required:true,
         trim:true
     },
     password:{
-        type:String, 
+        type:String,
         required:true,
         trim:true
     },
     accountType:{
-        type:String, 
+        type:String,
         enum:["Student","Instructor","Admin"],
         required:true,
     },
     additionalDetails:{
-        type:mongoose.Schema.Types.ObjectId, 
+        type:mongoose.Schema.Types.ObjectId,
         ref:"Profile",
-        required:true, //watch for this required or not
+        required:true,
     },
     courses:[{
-        type:mongoose.Schema.Types.ObjectId, 
+        type:mongoose.Schema.Types.ObjectId,
         ref:"Course",
     }],
     token:{

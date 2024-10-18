@@ -8,12 +8,16 @@ const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 require('dotenv').config()
 
+// Controller for sending OTP
 exports.sendOtp = async (req,res) => {
     try {
+        // Get email from req.body
         const {email} = req.body;
-        console.log("Email in senOtp controller",email)
+
+        // Check if User already exists
         const existingUser = await User.findOne({email});
 
+        // If user exists, return a 401 (Unauthorized) error
         if(existingUser){
             return res.status(401).json({
                 success:false,
@@ -21,13 +25,14 @@ exports.sendOtp = async (req,res) => {
             })
         }
 
+        // Generate OTP
         let otp = otpGenerator.generate(6,{
             upperCaseAlphabets:false,
             lowerCaseAlphabets:false,
             specialChars:false,
         });
-        
 
+        // Check if OTP already exists (Unique OYP or not)
         let result = await OTP.findOne({otp:otp});
 
         while (result) {
@@ -38,13 +43,14 @@ exports.sendOtp = async (req,res) => {
             });
             result = OTP.findOne({otp:otp});
         }
-        console.log("OTP generated", otp);
 
+        // Creating DB entry for OTP
         const createdOtp = await OTP.create({
             email,
             otp
         })
 
+        // Return success response
         return res.status(200).json({
             success:true,
             message: "OTP created!",
@@ -59,8 +65,10 @@ exports.sendOtp = async (req,res) => {
     }
 }
 
+// Controller for Singing Up
 exports.signUp = async (req,res) => {
     try {
+        // Get all details from req.body
         const {
             firstName, 
             lastName,
@@ -70,21 +78,24 @@ exports.signUp = async (req,res) => {
             accountType, 
             otp, contactNumber
         } = req.body;
-    
+        
+        // Check if any field is empty
         if(!firstName || !lastName || !email || !password || !confirmPassword || !otp){
             return res.status(403).json({
                 success:false,
                 message: "Fill all details"
             })
         }
-    
+        
+        // Check if password and confirm password match
         if(password!==confirmPassword){
             return res.status(403).json({
                 success:false,
                 message: "Passwords don't match"
             })
         }
-    
+        
+        // Check if user already exists
         const existingUser = await User.findOne({email});
     
         if(existingUser){
@@ -94,8 +105,11 @@ exports.signUp = async (req,res) => {
             })
         }
     
+        // Find most recent OTP for the user
         const recentOtp = await OTP.find({email}).sort({createdAt:-1}).limit(1);
         console.log("Otp in signup page is:",recentOtp[0].otp)
+
+        // Check if OTP exists
         if (recentOtp.length == 0) {
             return res.status(400).json({
                 success:false,
@@ -107,17 +121,19 @@ exports.signUp = async (req,res) => {
                 message:"Invalid OTP",
             });
         }
-    
+        
+        // hash the password
         const hashedPwd = await bcrypt.hash(password, 10);
         
         let approved = "";
 		approved === "Instructor" ? (approved = false) : (approved = true);
 
+        // Create a new profile for the user so that we can create entry in DB
         const profileDetails = await Profile.create({
             gender:null,
             dateOfBirth: null,
             about:null,
-            contactNumer:null,
+            contactNumber:null,
         });
         
         console.log("Data received in signup is" ,firstName )
@@ -141,15 +157,18 @@ exports.signUp = async (req,res) => {
         console.log(error);
         return res.status(500).json({
             success:false,
-            message:"User cannot be registrered. Please try again",
+            message:"User cannot be registered. Please try again",
         })
     }
 }
 
+// Controller for Logging In
 exports.login = async (req,res) => {
     try {
+        // Get email and password from req.body
         const {email, password} = req.body;
 
+        // Check if email or password is empty
         if(!email || !password){
             return res.status(400).json({
                 success:false,
@@ -157,6 +176,7 @@ exports.login = async (req,res) => {
             })
         }
 
+        // Check if user exists
         const existingUser = await User.findOne({email}).populate("additionalDetails").exec();
         if (!existingUser) {
             return res.status(400).json({
@@ -165,6 +185,7 @@ exports.login = async (req,res) => {
             })
         }
 
+        // Generate JWT token after password matching
         if (await bcrypt.compare(password, existingUser.password)) {
             const payload = {
                 email:email,
@@ -185,6 +206,7 @@ exports.login = async (req,res) => {
                 httpOnly:true
             }
 
+            //Create cookie and send response
             return res.cookie("token", token, options).status(200).json({
                 success:true,
                 message:'Login successfull',

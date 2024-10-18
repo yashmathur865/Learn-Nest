@@ -2,12 +2,13 @@ const RatingAndReview = require("../models/RatingAndReview");
 const Course = require("../models/Course");
 const mongoose = require("mongoose");
 
+// Create Rating and Review
 exports.createRating = async (req, res) => {
     try{
 
         //get user id
         const userId = req.user.id;
-        //fetchdata from req body
+        //fetch data from req body
         const {rating, review, courseId} = req.body;
         //check if user is enrolled or not
         const courseDetails = await Course.findOne(
@@ -21,6 +22,7 @@ exports.createRating = async (req, res) => {
                 message:'Student is not enrolled in the course',
             });
         }
+
         //check if user already reviewed the course
         const alreadyReviewed = await RatingAndReview.findOne({
                                                 user:userId,
@@ -32,13 +34,14 @@ exports.createRating = async (req, res) => {
                         message:'Course is already reviewed by the user',
                     });
                 }
+
         //create rating and review
         const ratingReview = await RatingAndReview.create({
                                         rating, review, 
                                         course:courseId,
                                         user:userId,
                                     });
-       
+
         //update course with this rating/review
         const updatedCourseDetails = await Course.findByIdAndUpdate({_id:courseId},
                                     {
@@ -48,6 +51,7 @@ exports.createRating = async (req, res) => {
                                     },
                                     {new: true});
         console.log(updatedCourseDetails);
+
         //return response
         return res.status(200).json({
             success:true,
@@ -64,11 +68,14 @@ exports.createRating = async (req, res) => {
     }
 }
 
+// Update Rating and Review
 exports.getAverageRating = async(req,res) => {
 
     try {
+        //get course id from req body
         const {courseId} = req.body;
 
+        //check if course exists
         const result = await RatingAndReview.aggregate([
             {
                 $match: {
@@ -77,6 +84,7 @@ exports.getAverageRating = async(req,res) => {
             },
             {
                 $group:{
+                    // we do not know on which credentials we are grouping so we are passing null to make single group
                     _id:null,
                     averageRating : {$avg :rating}
                 }
@@ -86,7 +94,7 @@ exports.getAverageRating = async(req,res) => {
         if (result.length>0) {
             return res.status(200).json({
                 success:true,
-                message:'Avg rating recived for the course',
+                message:'Avg rating received for the course',
                 averageRating: result[0].averageRating
             })
         }
@@ -102,7 +110,7 @@ exports.getAverageRating = async(req,res) => {
             message:error.message,
         })
     }
-    
+
 
 }
 
@@ -124,12 +132,12 @@ exports.getAllRating = async (req, res) => {
                 message:"All reviews fetched successfully",
                 data:allReviews,
             });
-    }   
+    }
     catch(error) {
         console.log(error);
         return res.status(500).json({
             success:false,
             message:error.message,
         })
-    } 
+    }
 }

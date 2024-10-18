@@ -3,6 +3,8 @@ const Course = require('../models/Course')
 function getRandomInt(max) {
     return Math.floor(Math.random() * max)
   }
+
+// Create a new category
 exports.createCategory = async (req,res) =>{
     try {
         const {name, description} =  req.body;
@@ -10,7 +12,7 @@ exports.createCategory = async (req,res) =>{
         if(!name || !description){
             return res.status(401).json({
                 success:false,
-                message:"Tag name or description not available"
+                message:"Category name or description not available"
             })
         }
 
@@ -22,13 +24,13 @@ exports.createCategory = async (req,res) =>{
         if (!newCategory) {
             return res.status(401).json({
                 success:false,
-                message:"Error in pushing new tag to db"
+                message:"Error in pushing new Category to db"
             }) 
         }
 
         return res.status(200).json({
             success:true,
-            message:"Tag created successfully"
+            message:"Category created successfully"
         })
     } catch (error) {
         return res.status(500).json({
@@ -38,6 +40,7 @@ exports.createCategory = async (req,res) =>{
     }
 }
 
+// Get all categories
 exports.showAllCategories = async (req,res) => {
 
     try {
@@ -46,7 +49,7 @@ exports.showAllCategories = async (req,res) => {
         
             return res.status(200).json({
                 success:true,
-                message:"All tags received",
+                message:"All Categories received",
                 data:allCategories
             })  
     } catch (error) {
@@ -57,8 +60,10 @@ exports.showAllCategories = async (req,res) => {
     }
 }
 
+// Get Page details for a category
 exports.categoryPageDetails = async (req,res) => {
     try {
+      // Get the category ID from the request body
         const { categoryId } = req.body
       console.log("PRINTING CATEGORY ID: ", categoryId);
       // Get courses for the specified category
@@ -69,7 +74,7 @@ exports.categoryPageDetails = async (req,res) => {
           populate: "ratingAndReviews",
         })
         .exec()
-  
+
       //console.log("SELECTED COURSE", selectedCourses)
       // Handle the case when the category is not found
       if (!selectedCourses) {
@@ -78,6 +83,7 @@ exports.categoryPageDetails = async (req,res) => {
           .status(404)
           .json({ success: false, message: "Category not found" })
       }
+
       // Handle the case when there are no courses
       if (selectedCourses.course.length === 0) {
         console.log("No courses found for the selected category.")
@@ -86,7 +92,7 @@ exports.categoryPageDetails = async (req,res) => {
           message: "No courses found for the selected category.",
         })
       }
-  
+
       // Get courses for other categories
       const categoriesExceptSelected = await Category.find({
         _id: { $ne: categoryId },

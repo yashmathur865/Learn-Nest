@@ -2,19 +2,18 @@ const mongoose =  require('mongoose');
 
 const profileSchema = new mongoose.Schema({
     gender:{
-        type:String, 
+        type:String,
     },
     dateOfBirth:{
-        type:String, 
-        
+        type:String,
     },
     about:{
-        type:String, 
+        type:String,
         trim:true,
     },
     contactNumber:{
-        type:String, 
-        
+        type:String,
+
     },
 
 

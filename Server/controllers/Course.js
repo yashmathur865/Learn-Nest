@@ -8,12 +8,17 @@ require('dotenv').config();
 const CourseProgress = require("../models/CourseProgress")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 
+// Create a new Course
 exports.createCourse = async (req,res) => {
     try {
+        //get all the required fields
         const{courseName, courseDescription, whatWillYouLearn, price, category,tags,status, instructions} = req.body;
 
+        //get the thumbnail image
         const thumbnail = req.files.thumbnailImage;
         console.log("Thumbnail in course creation is", thumbnail)
+
+        //validation
         if(!courseName || !courseDescription || !whatWillYouLearn || !price || !category || !thumbnail || !status || !instructions) {
             return res.status(400).json({
                 success:false,
@@ -21,6 +26,7 @@ exports.createCourse = async (req,res) => {
             });
         }
 
+        //Check For Instructor
         const instructorId = req.user.id;
 
         const categoryDetails = await Category.findById(category);
@@ -31,8 +37,10 @@ exports.createCourse = async (req,res) => {
             });
         }
 
+        //upload the thumbnail image to cloudinary
         const thumbnailImage = await uploadImageToCloudinary(thumbnail,process.env.FOLDER_NAME);
 
+        //Creating entry for new course
         const newCourse = await Course.create({
             courseName,
             description:courseDescription,
@@ -46,6 +54,7 @@ exports.createCourse = async (req,res) => {
             instructions
         })
 
+
         await Category.findByIdAndUpdate(category,
             {
                 $push: {
@@ -53,16 +62,17 @@ exports.createCourse = async (req,res) => {
                 }
             })
 
+        //update the new course to user schema of instructor
         await User.findByIdAndUpdate(instructorId, {
             $push: {
                 courses: newCourse._id
             }})
-            
+
         return res.status(200).json({
             success:true,
             message:'Course created successfully',
             newCourse
-        })    
+        })
     } catch (error) {
         console.error(error);
         return res.status(500).json({
@@ -73,6 +83,7 @@ exports.createCourse = async (req,res) => {
     }
 }
 
+// Get All Courses
 exports.showAllCourses = async (req,res) => {
     try {
         const allCourses = Course.find({}, {
@@ -84,6 +95,7 @@ exports.showAllCourses = async (req,res) => {
             studentsEnroled: true,
         }).populate("instructor").exec();
 
+        // return response
         return res.status(200).json({
             success:true,
             message:'Data for all courses fetched successfully',
@@ -99,11 +111,12 @@ exports.showAllCourses = async (req,res) => {
     }
 }
 
+// Get All Details of a Course
 exports.getCourseDetails = async (req, res) => {
   try {
-    //get id
+    //get the courseId from the request body
     const {courseId} = req.body;
-    //find course details
+    //Find course details
     const courseDetails = await Course.findById(courseId)
                                 .populate(
                                     {
@@ -227,7 +240,7 @@ exports.editCourse = async (req, res) => {
         error: error.message,
       })
     }
-  }
+}
 
   exports.getFullCourseDetails = async (req, res) => {
     try {
@@ -299,14 +312,14 @@ exports.editCourse = async (req, res) => {
         message: error.message,
       })
     }
-  }
-  
-  // Get a list of Course for a given Instructor
-  exports.getInstructorCourses = async (req, res) => {
+}
+
+// Get a list of Course for a given Instructor
+exports.getInstructorCourses = async (req, res) => {
     try {
       // Get the instructor ID from the authenticated user or request body
       const instructorId = req.user.id
-  
+
       // Find all courses belonging to the instructor
       const instructorCourses = await Course.find({
         instructor: instructorId,
@@ -317,7 +330,7 @@ exports.editCourse = async (req, res) => {
         },
       })
       .exec()
-  
+
       // Return the instructor's courses
       res.status(200).json({
         success: true,
@@ -331,18 +344,19 @@ exports.editCourse = async (req, res) => {
         error: error.message,
       })
     }
-  }
-  // Delete the Course
-  exports.deleteCourse = async (req, res) => {
+}
+
+// Delete the Course
+exports.deleteCourse = async (req, res) => {
     try {
       const { courseId } = req.body
-  
+
       // Find the course
       const course = await Course.findById(courseId)
       if (!course) {
         return res.status(404).json({ message: "Course not found" })
       }
-  
+
       // Unenroll students from the course
       const studentsEnrolled = course.studentsEnrolled
       for (const studentId of studentsEnrolled) {
@@ -350,7 +364,7 @@ exports.editCourse = async (req, res) => {
           $pull: { courses: courseId },
         })
       }
-  
+
       // Delete sections and sub-sections
       const courseSections = course.courseContent
       for (const sectionId of courseSections) {
@@ -362,15 +376,15 @@ exports.editCourse = async (req, res) => {
             await SubSection.findByIdAndDelete(subSectionId)
           }
         }
-  
+
         // Delete the section
         await Section.findByIdAndDelete(sectionId)
       }
-      
+
 
       // Delete the course
       await Course.findByIdAndDelete(courseId)
-  
+
       return res.status(200).json({
         success: true,
         message: "Course deleted successfully",
@@ -383,4 +397,4 @@ exports.editCourse = async (req, res) => {
         error: error.message,
       })
     }
-  }
+}

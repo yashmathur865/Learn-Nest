@@ -7,10 +7,14 @@ const { default: mongoose, Mongoose } = require("mongoose");
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail");
 const crypto = require("crypto");
 const CourseProgress = require("../models/CourseProgress")
-exports.capturePayment = async (req, res) => {
+
+// Capture Payment and initiate order
+exports.capturePayment = async (req, res) => { 
+    //Get Courses and userId from the request body
     const {courses} = req.body;
     const userId =  req.user.id;
 
+    //If courses are not provided, return an error
     if (courses.length === 0) {
         return res.json({
             success:false,
@@ -20,10 +24,11 @@ exports.capturePayment = async (req, res) => {
 
     let totalAmount = 0;
 
+    //Iterate over the courses and calculate the total amount
     for (const courseId of courses){
         let course;
         try {
-            
+
             course = await Course.findById(courseId);
             if(!course){
                 return res.status(200).json({
@@ -32,7 +37,9 @@ exports.capturePayment = async (req, res) => {
                 })
             }
 
+            //Convert the userId to ObjectId
             const uid = new mongoose.Types.ObjectId(userId);
+            //Check if the user is already enrolled in the course
             if(course.studentsEnrolled.includes(uid)){
                 return res.status(200).json({
                     success:false,
@@ -48,7 +55,7 @@ exports.capturePayment = async (req, res) => {
             })
         }
     }
-    
+
     console.log("The amount in capturePayment is", totalAmount)
     const currency = "INR"
     const options = {
@@ -58,6 +65,7 @@ exports.capturePayment = async (req, res) => {
     }
 
     try {
+        // Initiate the order
         const paymentResponse = await instance.orders.create(options)
         res.json({
             success:true,
@@ -65,7 +73,7 @@ exports.capturePayment = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
-        return res.status(500).json({success:false, mesage:"Could not Initiate Order"});
+        return res.status(500).json({success:false, message:"Could not Initiate Order"});
     }
 }
 
@@ -89,7 +97,7 @@ exports.verifyPayment = async (req,res) => {
                                     .digest("hex")
 
     if (expectedSignature === razorpay_signature) {
-        
+
         await enrollStudents(courses, userId, res);
 
         return res.status(200).json({success:true, message:"Payment Verified"});
@@ -109,7 +117,7 @@ const enrollStudents = async (courses, userId, res) => {
                     $push: {
                         studentsEnrolled: userId
                     }
-                }, {new:true})  
+                }, {new:true})
 
             if (!updatedCourse) {
                 return res.status(500).json({success:false,message:"Course not Found"});

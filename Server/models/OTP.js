@@ -13,7 +13,7 @@ const OTPSchema = new mongoose.Schema({
     },
     createdAt: {
         type:Date,
-        default:Date.now(),
+        default:Date.now,
         expires: 5*60,
     }
 });
@@ -25,7 +25,7 @@ async function sendVerificationOTP(email, otp) {
 			emailTemplate(otp))
         console.log("Email sent Successfully: ", mailResponse.response);
     } catch (error) {
-        console.log("error occured while sending mails: ", error);
+        console.log("error occurred while sending mails: ", error);
         throw error;
     }
 }
@@ -34,6 +34,6 @@ OTPSchema.pre("save", async function (next) {
     console.log("Mail in pre hook", this.email)
     await sendVerificationOTP(this.email, this.otp);
     next();
-}) 
+})
 
 module.exports = mongoose.model("OTP", OTPSchema);
